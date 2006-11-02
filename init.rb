@@ -1,1 +1,1 @@
-require '00_flickr'
+require 'flickrtags'

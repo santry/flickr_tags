@@ -1,4 +1,4 @@
 # desc "Explaining what the task does"
-# task :00_flickr do
+# task :FlickrTags do
 #   # Task goes here
 # end
