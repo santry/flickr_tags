@@ -2,7 +2,10 @@ FlickrTags
 ==========
 FlickrTags is an extension for the [Radiant CMS][1] that provides tags for embedding [Flickr][2] slideshows (and, eventually, photographs, photosets, etc.) in pages. You can see an example of an embedded slideshow at <http://seansantry.com/portfolio/>.
 
-The latest version is available at <http://seansantry.com/projects/flickrtags/> and from my subversion repository at <http://seansantry.com/svn/radiant/extensions/flickrtags/trunk>.
+The latest version is available on [GitHub][4]. When cloning, ensure your clone is named `flickr_tags`:
+
+        git clone git://github.com/santry/flickrtags.git vendor/extensions/flickr_tags
+
 	
 	
 `flickr:slideshow`
@@ -39,3 +42,4 @@ Thanks to [John Long][3] for creating Radiant and to [Flickr][2] for providing a
 [1]: http://radiantcms.org
 [2]: http://flickr.com
 [3]: http://wiseheartdesign.com/
+[4]: http://github.com/santry/flickrtags/
