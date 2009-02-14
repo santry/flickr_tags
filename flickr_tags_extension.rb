@@ -1,3 +1,5 @@
+require 'flickr'
+
 class FlickrTagsExtension < Radiant::Extension
   version "0.1"
   description "Provides tags for embedding Flickr slideshows"
