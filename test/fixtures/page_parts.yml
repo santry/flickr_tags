@@ -1,0 +1,13 @@
+homepage_body:
+   name: body
+   page: homepage
+   content: This is the body portion of the Ruby home page.
+slideshow_body:
+   name: body
+   page: slideshow
+   content: <r:flickr:slideshow user="10622160@N00" tags="portfolio"/>
+set_body:
+  name: body
+  page: set
+  content: <r:flickr:slideshow user="10622160@N00" set="548374"/>
+

@@ -1,0 +1,11 @@
+default:
+   name: Home Page
+   content: |
+     <html>
+       <head>
+         <title><r:title /></title>
+       </head>
+       <body>
+         <r:content />
+       </body>
+     </html>

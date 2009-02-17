@@ -1,0 +1,28 @@
+homepage:
+   id: 1
+   title: Homepage
+   breadcrumb: Home
+   slug: /
+   status_id: 100
+   layout_id: 1
+   parent_id:
+   published_at: 2009-01-01 00:00:00
+
+slideshow:
+   title: Flickr Tags Slideshow
+   breadcrumb: slideshow
+   slug: slideshow
+   status_id: 100
+   layout: default
+   parent_id: 1
+   published_at: 2009-01-01 00:00:00
+
+set:
+  id: 2
+  title: Flickr Tags Set
+  breadcrumb: set
+  slug: set
+  status_id: 100
+  layout: default
+  parent_id: 1
+  published_at: 2009-01-01 00:00:00
