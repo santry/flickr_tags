@@ -33,6 +33,27 @@ the set ID is `548374`. Then, specify the set ID in the `flickr:slideshow` tag
 
 	<r:flickr:slideshow user="10622160@N00" set="548374"/>
 
+
+`flickr:photos`
+===============
+	
+To get the photos for a certain user
+
+    <r:flickr:photos user="flickr-userid" limit="8" offset="1">
+	   <a href="<r:photo:url />"><img src="<r:photo:src size="square"/>" alt="<r:photo:title />" /></a>
+	</r:flickr:photos>
+
+Get the userid by visiting http://idgettr.com.
+	
+You should get a flickr API key, and provide it in the file config/flickr.yml in your radiant tree.
+The file is structured like this:
+
+    key: abc123abc123abc123abc123abc123abc123abc123
+	secret: abc123abc123
+	
+The flickr_fu gem should be installed. 
+
+This addition was made by Bernard Grymonpon (http://www.openminds.be/)
 	
 Acknowledgments
 ===============

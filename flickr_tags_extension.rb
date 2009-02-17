@@ -1,9 +1,9 @@
-require 'flickr'
+require 'flickr_fu'
 
 class FlickrTagsExtension < Radiant::Extension
-  version "0.1"
-  description "Provides tags for embedding Flickr slideshows"
-  url "http://seansantry.com/svn/radiant/extensions/flickrtags/trunk/"
+  version "0.2"
+  description "Provides tags for embedding Flickr slideshows and photos"
+  url "http://github.com/santry/flickrtags"
   
   def activate
     Page.send :include, FlickrTags
