@@ -31,16 +31,7 @@ EOS
     end 
   end
   
-  tag 'flickr:user' do |tag|
-
-    tag.expand
-  end
-
-  tag 'flickr:user:photos' do |tag|
-    tag.expand
-  end
-
-  tag 'flickr:user:photos:each' do |tag|
+  tag 'flickr:photos' do |tag|
 
     attr = tag.attr.symbolize_keys
 
@@ -51,18 +42,15 @@ EOS
         if number =~ /^\d{1,4}$/
           options[symbol] = number.to_i
         else
-          raise TagError.new("`#{symbol}' attribute of `each' tag must be a positive number between 1 and 4 digits")
+          raise TagError.new("`#{symbol}' attribute of `photos' tag must be a positive number between 1 and 4 digits")
         end
       end
     end    
 
-    tag.attr['user'] ||= 'username'
+    raise StandardError.new("The `photos' tag requires a user id in `user' paramater") if tag.attr['user'].blank?
 
-
-    flickr = Flickr.new    
-    user = flickr.users(tag.attr['user'])
-
-    tag.locals.photos = user.photos(options[:limit], options[:offset])    
+    flickr = Flickr.new "#{RAILS_ROOT}/config/flickr.yml"
+    tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset])
 
     result = ''
 
@@ -75,70 +63,24 @@ EOS
 
   end
 
-  tag 'flickr:user:photos:each:photo' do |tag|
+  tag 'flickr:photos:photo' do |tag|
     tag.expand
   end
 
-  tag 'flickr:user:photos:each:photo:src' do |tag|
-    tag.attr['size'] ||= 'Medium'    
-    tag.locals.photo.source(tag.attr['size'])
+  tag 'flickr:photos:photo:src' do |tag|
+    tag.attr['size'] ||= 'Medium'
+    tag.locals.photo.sizes.find{|p| p.label.downcase == tag.attr['size'].downcase}.source 
   end
 
-  tag 'flickr:user:photos:each:photo:description' do |tag|
+  tag 'flickr:photos:photo:url' do |tag|
+    tag.locals.photo.url_photopage
+  end
+
+  tag 'flickr:photos:photo:description' do |tag|
     tag.locals.photo.description
   end
 
-  tag 'flickr:user:photos:each:photo:title' do |tag|
+  tag 'flickr:photos:photo:title' do |tag|
     tag.locals.photo.title
-  end  
-
-
-
-
-  # Photoset tags
-
-  tag "flickr:sets" do |tag|
-     tag.expand
-   end
-
-   tag "flickr:sets:each" do |tag|
-
-     tag.attr['user'] ||= 'username'
-
-     flickr = Flickr.new    
-     user = flickr.users(tag.attr['user'])
-
-     tag.locals.sets = user.photosets    
-
-     result = ''
-
-     tag.locals.sets.each do |set|
-       tag.locals.set = set
-       result << tag.expand
-     end
-
-     result
-
-  end
-
-  tag "flickr:set" do |tag|
-    tag.expand
-  end
-
-  tag "flickr:set:title" do |tag|
-    tag.locals.set.title
-  end
-
-  tag 'flickr:set:link' do |tag|
-    tag.locals.set.url.to_s
-  end
-
-  tag 'flickr:set:photos' do |tag|
-    tag.expand
-  end
-
-  tag 'flickr:set:photos:each' do |tag|
-
-  end  
-  
+  end   
 end
