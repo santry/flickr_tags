@@ -6,7 +6,7 @@ The latest version is available on [GitHub][4]. When cloning, ensure your clone 
 
     git clone git://github.com/santry/flickrtags.git vendor/extensions/flickr_tags
 
-FlickrTags also depends on the `flickr_fu` gem, which in turn requires a [Flickr API key][5]. Once you've obtained your API key, put it in config/flickr.yml as follows:
+FlickrTags also depends on the `flickr_fu` gem, which in turn requires a [Flickr API key][5]. Once you've obtained your API key, put it in `config/flickr.yml` as follows:
 
     key: abc123abc123abc123abc123abc123abc123abc123
     secret: abc123abc123
