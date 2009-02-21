@@ -50,7 +50,7 @@ EOS
     raise StandardError.new("The `photos' tag requires a user id in `user' paramater") if tag.attr['user'].blank?
 
     flickr = Flickr.new "#{RAILS_ROOT}/config/flickr.yml"
-    tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset])
+    tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset], 'tags' => tag.attr['tags'])
 
     result = ''
 

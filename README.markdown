@@ -44,6 +44,8 @@ The `flickr:photos` tag and its related tags embed individual photos. For exampl
       <a href="<r:photo:url />"><img src="<r:photo:src size="square"/>" alt="<r:photo:title />" /></a>
     </r:flickr:photos>
 
+The `flickr:photos` tag also takes an optional `tags` attribute with a comma-separated list of Flickr tags to search. Photos that match any of the given tags will be returned.
+
 This addition was made by Bernard Grymonpon (http://www.openminds.be/)
 	
 Acknowledgments
