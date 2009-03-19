@@ -30,38 +30,45 @@ EOS
       raise StandardError.new("Please provide a Flickr set ID in the flickr:slideshow tag's `set` attribute or a comma-separated list of Flickr tags in the `tags` attribute")
     end 
   end
-  
+
   tag 'flickr:photos' do |tag|
+    
+    cachekey = "flickrfotos-" + Date.today.to_s
+    Rails.cache.fetch(cachekey) {
+      logger.info "Flickr cache miss"
+      
 
-    attr = tag.attr.symbolize_keys
 
-    options = {}
+      attr = tag.attr.symbolize_keys
 
-    [:limit, :offset].each do |symbol|
-      if number = attr[symbol]
-        if number =~ /^\d{1,4}$/
-          options[symbol] = number.to_i
-        else
-          raise TagError.new("`#{symbol}' attribute of `photos' tag must be a positive number between 1 and 4 digits")
+      options = {}
+
+      [:limit, :offset].each do |symbol|
+        if number = attr[symbol]
+          if number =~ /^\d{1,4}$/
+            options[symbol] = number.to_i
+          else
+            raise TagError.new("`#{symbol}' attribute of `photos' tag must be a positive number between 1 and 4 digits")
+          end
         end
-      end
-    end    
+      end    
 
-    raise StandardError.new("The `photos' tag requires a user id in `user' paramater") if tag.attr['user'].blank?
+      raise StandardError.new("The `photos' tag requires a user id in `user' paramater") if tag.attr['user'].blank?
 
-    flickr = Flickr.new "#{RAILS_ROOT}/config/flickr.yml"
-    tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset])
+        flickr = Flickr.new "#{RAILS_ROOT}/config/flickr.yml"
+        tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset])
 
-    result = ''
+        result = ''
 
-    tag.locals.photos.each do |photo|
-      tag.locals.photo = photo
-      result << tag.expand
+        tag.locals.photos.each do |photo|
+          tag.locals.photo = photo
+          result << tag.expand
+        end
+
+
+        result
+      }
     end
-
-    result
-
-  end
 
   tag 'flickr:photos:photo' do |tag|
     tag.expand
