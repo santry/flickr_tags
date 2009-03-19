@@ -59,6 +59,9 @@ Acknowledgments
 ===============
 Thanks to [John Long][3] for creating Radiant and to [Flickr][2] for providing a great photo-sharing community.
 
+Modifications by Frank Louwers: 
+  * enable caching, as it takes about 8 sec to do a Flickr request...
+
 
 [1]: http://radiantcms.org
 [2]: http://flickr.com
