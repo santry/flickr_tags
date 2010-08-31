@@ -1,3 +1,5 @@
+require 'flickr_fu'
+
 module FlickrTags
   include Radiant::Taggable
   
