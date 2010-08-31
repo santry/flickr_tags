@@ -2,6 +2,7 @@ require 'flickr_fu'
 
 module FlickrTags
   include Radiant::Taggable
+  class TagError < StandardError;end
   
   def get_flickr_iframe(user, param_name, param_val)
 <<EOS
@@ -21,7 +22,7 @@ EOS
     if (attr[:user])
       user = attr[:user].strip
     else
-      raise StandardError.new("Please provide a Flickr user name in the flickr:slideshow tag's `user` attribute")
+      raise TagError.new("Please provide a Flickr user name in the flickr:slideshow tag's `user` attribute")
     end
     
     if attr[:set]
@@ -29,7 +30,7 @@ EOS
     elsif attr[:tags]
       get_flickr_iframe user, 'tags', attr[:tags].strip
     else
-      raise StandardError.new("Please provide a Flickr set ID in the flickr:slideshow tag's `set` attribute or a comma-separated list of Flickr tags in the `tags` attribute")
+      raise TagError.new("Please provide a Flickr set ID in the flickr:slideshow tag's `set` attribute or a comma-separated list of Flickr tags in the `tags` attribute")
     end 
   end
 
@@ -53,7 +54,7 @@ EOS
         end
       end
 
-      raise StandardError.new("The `photos' tag requires a user id in `user' paramater") if tag.attr['user'].blank?
+      assert_user_attribute tag
 
       tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset], 'tags' => tag.attr['tags'])
 
@@ -83,8 +84,6 @@ EOS
     else
       begin
         tag.locals.photo = flickr.photos.find_by_id tag.attr['id']
-      rescue Flickr::Error => e
-        "Photo with ID #{tag.attr['id']} not found on Flickr"
       end
     end
   end
@@ -159,7 +158,7 @@ EOS
     <pre><code><r:flickr:sets:each user="asdasd@A32">…</r:flickr:sets:each></code></pre>
   }
   tag 'flickr:sets:each' do |tag|
-    assert_attribute tag, 'user'
+    assert_user_attribute tag
     user_sets(tag.attr['user']).collect do |set|
       tag.locals.flickr_set = set
       tag.expand
@@ -179,7 +178,7 @@ EOS
   tag 'flickr:set' do |tag|
     # TODO: select set by flickr set id instead of user+title
     # flickr_fu doesn't seem to support this at the moment, there is no find_by_id method on the Flickr::Photosets class
-    assert_attribute tag, 'user'
+    assert_user_attribute tag
     title = tag.attr['title'] || tag.locals.page.title
     titled_set = user_sets(tag.attr['user']).detect {|s| s.title == title }
     tag.expand if tag.locals.flickr_set = titled_set
@@ -228,7 +227,7 @@ private
     tag.locals.photo.sizes.detect { |i| i.label.downcase == size.downcase }
   end
   
-  def assert_attribute(tag, attribute_name)
-    raise TagError, "“#{attr}” attribute required" unless tag.attr[attribute_name]
+  def assert_user_attribute(tag)
+    raise TagError, "Tag #{tag.name} requires a Flickr user id in user attribute" unless tag.attr['user']
   end
 end
