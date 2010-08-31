@@ -82,7 +82,7 @@ EOS
 
     <pre><code><r:photo id="107274692" /></code></pre>
   }
-  tag 'flickr:photos:photo' do |tag|
+  tag 'flickr:photo' do |tag|
     unless tag.attr['id']
       tag.expand
     else
@@ -107,28 +107,28 @@ EOS
 
     <pre><code><r:photo:url [size="Original"] /></code></pre>
   }
-  tag 'flickr:photos:photo:src' do |tag|
+  tag 'flickr:photo:src' do |tag|
     select_size(tag).try :source
   end
   
   desc %{
     Prints the URL of the Flickr photo page
   }
-  tag 'flickr:photos:photo:url' do |tag|
+  tag 'flickr:photo:url' do |tag|
     tag.locals.flickr_photo.url_photopage
   end
 
   desc %{
     Prints the description of the current photo
   }
-  tag 'flickr:photos:photo:description' do |tag|
+  tag 'flickr:photo:description' do |tag|
     tag.locals.flickr_photo.try :description
   end
   
   desc %{
     Prints the title of the current photo
   }
-  tag 'flickr:photos:photo:title' do |tag|
+  tag 'flickr:photo:title' do |tag|
     tag.locals.flickr_photo.try :title
   end
   
