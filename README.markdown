@@ -11,7 +11,15 @@ FlickrTags also depends on the `flickr_fu` gem, which in turn requires a [Flickr
     key: abc123abc123abc123abc123abc123abc123abc123
     secret: abc123abc123
 
-Some of the tags require a `user` attribute, in which you must specify your Flickr user ID, not your Flickr screen name. If you don't know your Flickr user ID, you can look it up at <http://idgettr.com/>. 
+Some of the tags require a `user` attribute, in which you must specify your Flickr user ID, not your Flickr screen name. If you don't know your Flickr user ID, you can look it up at <http://idgettr.com/>.
+
+Because Flickr lookups are very slow, the results are cached for some time so changes on Flickr take a while to show up. By default this is about 1 hour. You can change this by setting FlickrTagsExtension.cache_timeout in your environment.rb like so:
+  
+  config.after_initialize do
+    FlickrTagsExtension.cache_timeout = 2.days
+  end
+  
+Note that for this to work the value should be larger than Radiant's cache timeout (SiteController.cache_timeout) which is 5 minutes by default.
 
 `flickr:slideshow`
 ==================

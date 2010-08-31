@@ -33,40 +33,44 @@ EOS
       raise TagError.new("Please provide a Flickr set ID in the flickr:slideshow tag's `set` attribute or a comma-separated list of Flickr tags in the `tags` attribute")
     end 
   end
-
+  
   tag 'flickr:photos' do |tag|
+    logger.info 'Flickr photos cache miss'
     
-    cachekey = "flickrfotos-" + Date.today.to_s
-    Rails.cache.fetch(cachekey) do
-      logger.info "Flickr cache miss"
-
-      attr = tag.attr.symbolize_keys
-
-      options = {}
-
-      [:limit, :offset].each do |symbol|
-        if number = attr[symbol]
-          if number =~ /^\d{1,4}$/
-            options[symbol] = number.to_i
-          else
-            raise TagError.new("`#{symbol}' attribute of `photos' tag must be a positive number between 1 and 4 digits")
-          end
+    attr = tag.attr.symbolize_keys
+    
+    options = {}
+    
+    [:limit, :offset].each do |symbol|
+      if number = attr[symbol]
+        if number =~ /^\d{1,4}$/
+          options[symbol] = number.to_i
+        else
+          raise TagError.new("`#{symbol}' attribute of `photos' tag must be a positive number between 1 and 4 digits")
         end
       end
-
-      assert_user_attribute tag
-
-      tag.locals.flickr_photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset], 'tags' => tag.attr['tags'])
-
-      result = ''
-
-      tag.locals.flickr_photos.each do |photo|
-        tag.locals.flickr_photo = photo
-        result << tag.expand
-      end
-
-      result
     end
+    
+    assert_user_attribute tag
+    
+    key = ['photos', tag.attr['user'], options[:limit], options[:offset], tag.attr['tags']]
+    tag.locals.flickr_photos = cached(key) do
+      flickr.photos.search(
+        :user_id => tag.attr['user'],
+        'per_page' => options[:limit],
+        'page' => options[:offset],
+        'tags' => tag.attr['tags']
+      )
+    end
+    
+    result = ''
+    
+    tag.locals.flickr_photos.each do |photo|
+      tag.locals.flickr_photo = photo
+      result << tag.expand
+    end
+    
+    result
   end
   
   desc %{
@@ -219,6 +223,12 @@ EOS
 private
   def flickr
     @flickr ||= Flickr.new "#{RAILS_ROOT}/config/flickr.yml"
+  end
+  
+  def cached(*args, &block)
+    expiry = Time.zone.now + FlickrTagsExtension.cache_timeout
+    key = (['flickr'] + args + [expiry.to_i]).flatten.join('-')
+    Rails.cache.fetch(key, &block)
   end
   
   def user_sets(user_id)
