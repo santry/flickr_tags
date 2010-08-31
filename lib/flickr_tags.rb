@@ -87,7 +87,9 @@ EOS
       tag.expand
     else
       begin
-        tag.locals.flickr_photo = flickr.photos.find_by_id tag.attr['id']
+        tag.locals.flickr_photo = cached('photo', tag.attr['id']) do
+          flickr.photos.find_by_id tag.attr['id']
+        end
       end
     end
   end
@@ -232,7 +234,9 @@ private
   end
   
   def user_sets(user_id)
-    @user_sets ||= flickr.photosets.get_list :user_id => user_id
+    @user_sets ||= cached('photosets', user_id) do
+      flickr.photosets.get_list :user_id => user_id
+    end
   end
   
   def select_size(tag)
