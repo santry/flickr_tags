@@ -169,7 +169,7 @@ EOS
     Selects one of the user's photosets by title
     
     Requires a flickr user id in the +user+ attribute
-    If title attribute isn't given, the title of the current page is used
+    When not inside a flickr:sets:each and there is no title attribute given, the title of the current page is used
     
     *Usage*:
     
@@ -178,10 +178,14 @@ EOS
   tag 'flickr:set' do |tag|
     # TODO: select set by flickr set id instead of user+title
     # flickr_fu doesn't seem to support this at the moment, there is no find_by_id method on the Flickr::Photosets class
-    assert_user_attribute tag
-    title = tag.attr['title'] || tag.locals.page.title
-    titled_set = user_sets(tag.attr['user']).detect {|s| s.title == title }
-    tag.expand if tag.locals.flickr_set = titled_set
+    unless tag.locals.flickr_set
+      assert_user_attribute tag
+      title = tag.attr['title'] || tag.locals.page.title
+      titled_set = user_sets(tag.attr['user']).detect {|s| s.title == title }
+      tag.expand if tag.locals.flickr_set = titled_set
+    else
+      tag.expand
+    end
   end
   
   desc %{
@@ -218,7 +222,7 @@ private
   end
   
   def user_sets(user_id)
-    user_sets = flickr.photosets.get_list :user_id => user_id
+    @user_sets ||= flickr.photosets.get_list :user_id => user_id
   end
   
   def select_size(tag)
