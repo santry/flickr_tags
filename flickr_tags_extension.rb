@@ -1,5 +1,5 @@
 class FlickrTagsExtension < Radiant::Extension
-  version "0.2"
+  version "0.3"
   description "Provides tags for embedding Flickr slideshows and photos"
   url "http://github.com/santry/flickr_tags"
   

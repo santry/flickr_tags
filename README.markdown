@@ -41,13 +41,38 @@ the set ID is `548374`. Then, specify the set ID in the `flickr:slideshow` tag
 The `flickr:photos` tag and its related tags embed individual photos. For example, 	
 
     <r:flickr:photos user="flickr-userid" limit="8" offset="1">
-      <a href="<r:photo:url />"><img src="<r:photo:src size="square"/>" alt="<r:photo:title />" /></a>
+      <a href="<r:photo:url />"><img src="<r:photo:src size="square"/>" title="<r:photo:title />" /></a>
     </r:flickr:photos>
 
 The `flickr:photos` tag also takes an optional `tags` attribute with a comma-separated list of Flickr tags to search. Photos that match any of the given tags will be returned.
 
 This addition was made by Bernard Grymonpon (http://www.openminds.be/)
-	
+
+`flickr:sets:each`
+==================
+The `flickr:sets:each` gives access to all of a user's photosets
+
+  <r:flickr:sets:each user="flickr-userid">
+    <h2><r:set:title /></h2>
+    <p><r:set:description /></p>
+    <ul>
+      <r:photos:each>
+        <li><a href="<r:photo:url />"><r:photo:url /></a></li>
+      </r:photos:each>
+    </ul>
+  </r:flickr:set>
+
+`flickr:set`
+============
+The `flickr:set` tag allows you to select a user's photoset by its title. You can then iterate over all the photos using `r:flickr:set:photos:each`. (tag names shown abbreviated here in the example).
+
+    <r:flickr:set user="flickr-userid" title="My vacation pictures">
+      <r:photos:each>
+        <img src="<r:photo:src size="square"/>" title="<r:photo:title />" />
+      </r:photos:each>
+    </r:flickr:set>
+
+
 Acknowledgments
 ===============
 Thanks to [John Long][3] for creating Radiant and to [Flickr][2] for providing a great photo-sharing community.

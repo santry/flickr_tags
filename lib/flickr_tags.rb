@@ -55,7 +55,6 @@ EOS
 
       raise StandardError.new("The `photos' tag requires a user id in `user' paramater") if tag.attr['user'].blank?
 
-      flickr = Flickr.new "#{RAILS_ROOT}/config/flickr.yml"
       tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset], 'tags' => tag.attr['tags'])
 
       result = ''
@@ -68,25 +67,168 @@ EOS
       result
     end
   end
+  
+  desc %{
+    Get a Flickr photo based on its Photo Id
+    
+    E.g. for the photo http://www.flickr.com/photos/ccgd/107274692/, the ID would be “107274692”
+    
+    *Usage*:
 
+    <pre><code><r:photo id="107274692" /></code></pre>
+  }
   tag 'flickr:photos:photo' do |tag|
-    tag.expand
+    unless tag.attr['id']
+      tag.expand
+    else
+      begin
+        tag.locals.photo = flickr.photos.find_by_id tag.attr['id']
+      rescue Flickr::Error => e
+        "Photo with ID #{tag.attr['id']} not found on Flickr"
+      end
+    end
   end
+  
+  desc %{
+    Prints the URL of the image file for the current photo
+    
+    set the size of the image via the +size+ attribute.
+    Possible values are (depending on the photo)
+    "Square", "Thumbnail", "Small", "Medium", "Medium 640", "Large" and "Original"
+    
+    +size+ defaults to 'Medium'
+    
+    *Usage*:
 
+    <pre><code><r:photo:url [size="Original"] /></code></pre>
+  }
   tag 'flickr:photos:photo:src' do |tag|
-    tag.attr['size'] ||= 'Medium'
-    tag.locals.photo.sizes.find{|p| p.label.downcase == tag.attr['size'].downcase}.source 
+    select_size(tag).try :source
   end
-
+  
+  desc %{
+    Prints the URL of the Flickr photo page
+  }
   tag 'flickr:photos:photo:url' do |tag|
     tag.locals.photo.url_photopage
   end
 
+  desc %{
+    Prints the description of the current photo
+  }
   tag 'flickr:photos:photo:description' do |tag|
-    tag.locals.photo.description
+    tag.locals.photo.try :description
   end
-
+  
+  desc %{
+    Prints the title of the current photo
+  }
   tag 'flickr:photos:photo:title' do |tag|
-    tag.locals.photo.title
-  end   
+    tag.locals.photo.try :title
+  end
+  
+  desc %{
+    Prints an HTML <img> for the image
+    
+    set the size of the image via the +size+ attribute, allowed values are
+    "Square", "Thumbnail", "Small", "Medium", "Medium 640", "Large" and "Original"
+    
+    +size+ defaults to 'Medium'
+    
+    *Usage*:
+
+    <pre><code><r:image [size="Original"] /></code></pre>
+  }
+  tag 'flickr:photos:photo:image' do |tag|
+    if image = select_size(tag)
+      %Q{<img src="#{image.url}" width="#{image.width}" height="#{image.height}">}
+    end
+  end
+  
+  tag 'flickr:sets' do |tag|
+    tag.expand
+  end
+  
+  desc %{
+    Prints its contents for each of the user's photosets
+    
+    Requires a flickr user id in the +user+ attribute
+    
+    *Usage*:
+    
+    <pre><code><r:flickr:sets:each user="asdasd@A32">…</r:flickr:sets:each></code></pre>
+  }
+  tag 'flickr:sets:each' do |tag|
+    assert_attribute tag, 'user'
+    user_sets(tag.attr['user']).collect do |set|
+      tag.locals.flickr_set = set
+      tag.expand
+    end.join
+  end
+  
+  desc %{
+    Selects one of the user's photosets by title
+    
+    Requires a flickr user id in the +user+ attribute
+    If title attribute isn't given, the title of the current page is used
+    
+    *Usage*:
+    
+    <pre><code><r:set user="asdasd@A32" [title="My holiday pictures"]>…</r:set></code></pre>
+  }
+  tag 'flickr:set' do |tag|
+    # TODO: select set by flickr set id instead of user+title
+    # flickr_fu doesn't seem to support this at the moment, there is no find_by_id method on the Flickr::Photosets class
+    assert_attribute tag, 'user'
+    title = tag.attr['title'] || tag.locals.page.title
+    titled_set = user_sets(tag.attr['user']).detect {|s| s.title == title }
+    tag.expand if tag.locals.flickr_set = titled_set
+  end
+  
+  desc %{
+    Prints the title of the current set
+  }
+  tag 'flickr:set:title' do |tag|
+    tag.locals.flickr_set.try :title
+  end
+  
+  desc %{
+    Prints the description of the current set
+  }
+  tag 'flickr:set:description' do |tag|
+    tag.locals.flickr_set.try :description
+  end
+  
+  tag 'flickr:set:photos' do |tag|
+    tag.expand
+  end
+  
+  desc %{
+    Print the contents of this tag for each of the photos in the current photoset
+  }
+  tag 'flickr:set:photos:each' do |tag|
+    tag.locals.flickr_set.get_photos.collect do |photo|
+      #TODO: use less ambigious name for locals var
+      tag.locals.photo = photo
+      tag.expand
+    end.join
+  end
+  
+private
+  def flickr
+    @flickr ||= Flickr.new "#{RAILS_ROOT}/config/flickr.yml"
+  end
+  
+  def user_sets(user_id)
+    user_sets = flickr.photosets.get_list :user_id => user_id
+  end
+  
+  def select_size(tag)
+    size = tag.attr['size'] || 'Medium'
+    tag.locals.photo.sizes.detect { |i| i.label.downcase == size.downcase }
+  end
+  
+  def assert_attribute(tag, attribute_name)
+    raise TagError, "“#{attr}” attribute required" unless tag.attr[attribute_name]
+  end
 end
