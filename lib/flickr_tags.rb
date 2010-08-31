@@ -56,12 +56,12 @@ EOS
 
       assert_user_attribute tag
 
-      tag.locals.photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset], 'tags' => tag.attr['tags'])
+      tag.locals.flickr_photos = flickr.photos.search(:user_id => tag.attr['user'], 'per_page' => options[:limit], 'page' => options[:offset], 'tags' => tag.attr['tags'])
 
       result = ''
 
-      tag.locals.photos.each do |photo|
-        tag.locals.photo = photo
+      tag.locals.flickr_photos.each do |photo|
+        tag.locals.flickr_photo = photo
         result << tag.expand
       end
 
@@ -83,7 +83,7 @@ EOS
       tag.expand
     else
       begin
-        tag.locals.photo = flickr.photos.find_by_id tag.attr['id']
+        tag.locals.flickr_photo = flickr.photos.find_by_id tag.attr['id']
       end
     end
   end
@@ -109,21 +109,21 @@ EOS
     Prints the URL of the Flickr photo page
   }
   tag 'flickr:photos:photo:url' do |tag|
-    tag.locals.photo.url_photopage
+    tag.locals.flickr_photo.url_photopage
   end
 
   desc %{
     Prints the description of the current photo
   }
   tag 'flickr:photos:photo:description' do |tag|
-    tag.locals.photo.try :description
+    tag.locals.flickr_photo.try :description
   end
   
   desc %{
     Prints the title of the current photo
   }
   tag 'flickr:photos:photo:title' do |tag|
-    tag.locals.photo.try :title
+    tag.locals.flickr_photo.try :title
   end
   
   desc %{
@@ -207,8 +207,7 @@ EOS
   }
   tag 'flickr:set:photos:each' do |tag|
     tag.locals.flickr_set.get_photos.collect do |photo|
-      #TODO: use less ambigious name for locals var
-      tag.locals.photo = photo
+      tag.locals.flickr_photo = photo
       tag.expand
     end.join
   end
@@ -224,7 +223,7 @@ private
   
   def select_size(tag)
     size = tag.attr['size'] || 'Medium'
-    tag.locals.photo.sizes.detect { |i| i.label.downcase == size.downcase }
+    tag.locals.flickr_photo.sizes.detect { |i| i.label.downcase == size.downcase }
   end
   
   def assert_user_attribute(tag)
