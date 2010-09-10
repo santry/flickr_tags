@@ -35,8 +35,6 @@ EOS
   end
   
   tag 'flickr:photos' do |tag|
-    logger.info 'Flickr photos cache miss'
-    
     attr = tag.attr.symbolize_keys
     
     options = {}
@@ -55,6 +53,7 @@ EOS
     
     key = ['photos', tag.attr['user'], options[:limit], options[:offset], tag.attr['tags']]
     tag.locals.flickr_photos = cached(key) do
+      logger.info("Searching for flickr photos for #{tag.attr['user']} tagged #{tag.attr['tags']}")
       flickr.photos.search(
         :user_id => tag.attr['user'],
         'per_page' => options[:limit],
@@ -84,10 +83,11 @@ EOS
   }
   tag 'flickr:photo' do |tag|
     unless tag.attr['id']
-      tag.expand
+      tag.expand # Tag works as simple namespace when iterating over sets/collections/user photos
     else
       begin
         tag.locals.flickr_photo = cached('photo', tag.attr['id']) do
+          logger.info("Getting Flickr photo with ID #{tag.attr['id']}")
           flickr.photos.find_by_id tag.attr['id']
         end
       end
@@ -115,7 +115,7 @@ EOS
     Prints the URL of the Flickr photo page
   }
   tag 'flickr:photo:url' do |tag|
-    tag.locals.flickr_photo.url_photopage
+    tag.locals.flickr_photo.try :url_photopage
   end
 
   desc %{
@@ -216,7 +216,11 @@ EOS
     Print the contents of this tag for each of the photos in the current photoset
   }
   tag 'flickr:set:photos:each' do |tag|
-    tag.locals.flickr_set.get_photos.collect do |photo|
+    photos = cached('set-photos', tag.locals.flickr_set.title) do
+      logger.info("Getting photos for Flickr set #{tag.locals.flickr_set.title}")
+      tag.locals.flickr_set.get_photos
+    end
+    photos.collect do |photo|
       tag.locals.flickr_photo = photo
       tag.expand
     end.join
@@ -228,13 +232,23 @@ private
   end
   
   def cached(*args, &block)
-    expiry = Time.zone.now + FlickrTagsExtension.cache_timeout
-    key = (['flickr'] + args + [expiry.to_i]).flatten.join('-')
-    Rails.cache.fetch(key, &block)
+    key = (['flickr'] + args).flatten.join('-')
+    expiry_key = "#{key}_expiry"
+    previous_expiry = Rails.cache.read(expiry_key)
+    if previous_expiry && previous_expiry > Time.zone.now
+      Rails.cache.fetch(key, &block)
+    else
+      logger.info("Cache miss for #{key}")
+      block.call.tap do |result|
+        Rails.cache.write(expiry_key, FlickrTagsExtension.cache_timeout.from_now)
+        Rails.cache.write(key, result)
+      end
+    end
   end
   
   def user_sets(user_id)
     @user_sets ||= cached('photosets', user_id) do
+      logger.info("Getting photosets for user with id #{user_id}")
       flickr.photosets.get_list :user_id => user_id
     end
   end
