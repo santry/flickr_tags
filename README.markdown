@@ -11,7 +11,15 @@ FlickrTags also depends on the `flickr_fu` gem, which in turn requires a [Flickr
     key: abc123abc123abc123abc123abc123abc123abc123
     secret: abc123abc123
 
-Some of the tags require a `user` attribute, in which you must specify your Flickr user ID, not your Flickr screen name. If you don't know your Flickr user ID, you can look it up at <http://idgettr.com/>. 
+Some of the tags require a `user` attribute, in which you must specify your Flickr user ID, not your Flickr screen name. If you don't know your Flickr user ID, you can look it up at <http://idgettr.com/>.
+
+Because Flickr lookups are very slow, the results are cached for some time so changes on Flickr take a while to show up. By default this is about 1 hour. You can change this by setting FlickrTagsExtension.cache_timeout in your environment.rb like so:
+  
+  config.after_initialize do
+    FlickrTagsExtension.cache_timeout = 2.days
+  end
+  
+Note that for this to work the value should be larger than Radiant's cache timeout (SiteController.cache_timeout) which is 5 minutes by default.
 
 `flickr:slideshow`
 ==================
@@ -41,13 +49,38 @@ the set ID is `548374`. Then, specify the set ID in the `flickr:slideshow` tag
 The `flickr:photos` tag and its related tags embed individual photos. For example, 	
 
     <r:flickr:photos user="flickr-userid" limit="8" offset="1">
-      <a href="<r:photo:url />"><img src="<r:photo:src size="square"/>" alt="<r:photo:title />" /></a>
+      <a href="<r:photo:url />"><img src="<r:photo:src size="square"/>" title="<r:photo:title />" /></a>
     </r:flickr:photos>
 
 The `flickr:photos` tag also takes an optional `tags` attribute with a comma-separated list of Flickr tags to search. Photos that match any of the given tags will be returned.
 
 This addition was made by Bernard Grymonpon (http://www.openminds.be/)
-	
+
+`flickr:sets:each`
+==================
+The `flickr:sets:each` gives access to all of a user's photosets
+
+  <r:flickr:sets:each user="flickr-userid">
+    <h2><r:set:title /></h2>
+    <p><r:set:description /></p>
+    <ul>
+      <r:photos:each>
+        <li><a href="<r:photo:url />"><r:photo:url /></a></li>
+      </r:photos:each>
+    </ul>
+  </r:flickr:set>
+
+`flickr:set`
+============
+The `flickr:set` tag allows you to select a user's photoset by its title. You can then iterate over all the photos using `r:flickr:set:photos:each`. (tag names shown abbreviated here in the example).
+
+    <r:flickr:set user="flickr-userid" title="My vacation pictures">
+      <r:photos:each>
+        <img src="<r:photo:src size="square"/>" title="<r:photo:title />" />
+      </r:photos:each>
+    </r:flickr:set>
+
+
 Acknowledgments
 ===============
 Thanks to [John Long][3] for creating Radiant and to [Flickr][2] for providing a great photo-sharing community.
